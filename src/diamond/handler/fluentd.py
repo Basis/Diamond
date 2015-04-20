@@ -64,7 +64,7 @@ class FluentdHandler(Handler):
         self.queue_max_timestamp = int(time.time() + self.queue_max_interval)
         self.current_n_measurements = 0
 
-        sender.setup(self.config['prefix_tag'], host=self.config['host'], port=self.config['port'])
+        sender.setup(self.config['prefix_tag'], host=self.config['host'], port=int(self.config['port']))
 
         # If a user leaves off the ending comma, cast to a array for them
         include_filters = self.config['include_filters']
