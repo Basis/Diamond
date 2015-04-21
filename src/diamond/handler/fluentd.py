@@ -125,7 +125,7 @@ class FluentdHandler(Handler):
                             'value': float(metric.value),  # value
                             'type': m_type,
                             'host': metric.host,
-                            'time': metric.timestamp})
+                            'time': str(metric.timestamp)})
             self.current_n_measurements += 1
         else:
             self.log.debug("FluentdHandler: Skip %s, no include_filters match",
