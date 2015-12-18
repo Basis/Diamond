@@ -1,4 +1,4 @@
--e git+ssh://git@github.com/Basis/fluent-logger-python.git@8f50473#egg=fluent_logger_python-0.3.5
+-e git+ssh://git@github.com/kalail/heka-py.git@master#egg=heka_py-0.30.3
 
 # setup.py is not understood by newer?older? versions of distutil
 ConfigObj
