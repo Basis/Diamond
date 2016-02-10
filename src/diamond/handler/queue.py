@@ -26,12 +26,22 @@ class QueueHandler(Handler):
     def process(self, metric):
         return self._process(metric)
 
+    def process_event(self, event):
+        return self._process(event)
+
     def _process(self, metric):
         """
         We skip any locking code due to the fact that this is now a single
         process per collector
         """
         self.metrics.append(metric)
+        
+    def _process_event(self, event):
+        """
+        We skip any locking code due to the fact that this is now a single
+        process per collector
+        """
+        self.metrics.append(event)
 
     def flush(self):
         return self._flush()

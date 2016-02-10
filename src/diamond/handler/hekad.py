@@ -115,6 +115,29 @@ class HekaHandler(Handler):
             self.log.debug("HekaHandler: Skip %s, no include_filters match",
                            path)
 
+    def process_event(self, event):
+        """
+        Process a event by sending it to Heka
+        """
+        path = event.getCollectorPath()
+        path += '.'
+        path += event.getMetricPath()
+
+        if self.include_reg.match(path):
+            msg = heka.Message(
+                    type=path,
+                    logger=self.config['logger'],
+                    severity=heka.severity.INFORMATIONAL,
+                    fields=event.fields,
+                    hostname=event.host,
+                    timestamp=event.timestamp,
+                )
+            self.conn.send_message(msg)
+
+        else:
+            self.log.debug("HekaHandler: Skip %s, no include_filters match",
+                           path)
+
     def flush(self):
         """ Since we don't queue, this doesn't do anything """
         pass

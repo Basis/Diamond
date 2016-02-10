@@ -76,9 +76,33 @@ class Handler(object):
             if self.lock.locked():
                 self.lock.release()
 
+    def _process_event(self, event):
+        """
+        Decorator for processing handlers with a lock, catching exceptions
+        """
+        if not self.enabled:
+            return
+        try:
+            try:
+                self.lock.acquire()
+                self.process_event(event)
+            except Exception:
+                self.log.error(traceback.format_exc())
+        finally:
+            if self.lock.locked():
+                self.lock.release()
+
     def process(self, metric):
         """
         Process a metric
+
+        Should be overridden in subclasses
+        """
+        raise NotImplementedError
+
+    def process_event(self, event):
+        """
+        Process a event
 
         Should be overridden in subclasses
         """

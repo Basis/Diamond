@@ -98,7 +98,12 @@ def handler_process(handlers, metric_queue, log):
     while(True):
         metrics = metric_queue.get(block=True, timeout=None)
         for metric in metrics:
-            for handler in handlers:
-                handler._process(metric)
+            from diamond.event import Event
+            if isinstance(metric, Event):
+                for handler in handlers:
+                    handler._process_event(metric)
+            else:
+                for handler in handlers:
+                    handler._process(metric)
         for handler in handlers:
             handler._flush()

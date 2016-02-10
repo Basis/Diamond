@@ -14,6 +14,7 @@ import re
 import subprocess
 
 from diamond.metric import Metric
+from diamond.event import Event
 from diamond.utils.config import load_config
 from error import DiamondException
 
@@ -397,6 +398,29 @@ class Collector(object):
 
         # Publish Metric
         self.publish_metric(metric)
+
+    def create_publish_event(self, name, fields={}):
+        """
+        Publish a Event object from args
+        """
+        # Get metric Path
+        path = self.get_metric_path(name)
+        try:
+            event = Event(path, fields, host=self.get_hostname())
+        except DiamondException:
+            self.log.error(('Error when creating new Event: path=%r, '
+                            'fields=%r'), path, fields)
+            raise
+
+        self.publish_event(event)
+
+    def publish_event(self, event):
+        """
+        Publish a Event object
+        """
+        # Process Metric
+        for handler in self.handlers:
+            handler._process(event)
 
     def publish_metric(self, metric):
         """
