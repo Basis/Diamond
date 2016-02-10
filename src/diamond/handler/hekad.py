@@ -32,6 +32,7 @@ import logging
 import time
 import re
 from datetime import datetime
+import socket
 try:
     import heka as heka
 except ImportError:
@@ -61,6 +62,7 @@ class HekaHandler(Handler):
             include_filters = [include_filters]
 
         self.include_reg = re.compile(r'(?:%s)' % '|'.join(include_filters))
+        self.hostname = socket.gethostname()
 
     def get_default_config_help(self):
         """
@@ -106,7 +108,7 @@ class HekaHandler(Handler):
                     logger=self.config['logger'],
                     severity=heka.severity.INFORMATIONAL,
                     fields={'value': float(metric.value)},
-                    hostname=metric.host,                    
+                    hostname=self.hostname,
                     timestamp=metric.timestamp,
                 )
             self.conn.send_message(msg)
@@ -129,7 +131,7 @@ class HekaHandler(Handler):
                     logger=self.config['logger'],
                     severity=heka.severity.INFORMATIONAL,
                     fields=event.fields,
-                    hostname=event.host,
+                    hostname=self.hostname,
                     timestamp=event.timestamp,
                 )
             self.conn.send_message(msg)
