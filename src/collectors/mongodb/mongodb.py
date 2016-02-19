@@ -152,7 +152,7 @@ class MongoDBCollector(diamond.collector.Collector):
                         fields=fields,
                     )
             self.publish('current_ops.count', num)
-            self.publish('slow_query.count', num)
+            self.publish('slow_query.count', num_over_one_sec)
 
 
     def get_dotted_value(self, data, key_name):
