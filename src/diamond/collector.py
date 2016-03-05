@@ -399,14 +399,14 @@ class Collector(object):
         # Publish Metric
         self.publish_metric(metric)
 
-    def create_publish_event(self, name, fields={}):
+    def create_publish_event(self, name, timestamp=None, fields={}):
         """
         Publish a Event object from args
         """
         # Get metric Path
         path = self.get_metric_path(name)
         try:
-            event = Event(path, fields, host=self.get_hostname())
+            event = Event(path, fields, timestamp, host=self.get_hostname())
         except DiamondException:
             self.log.error(('Error when creating new Event: path=%r, '
                             'fields=%r'), path, fields)

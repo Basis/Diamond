@@ -22,6 +22,7 @@ from diamond.collector import str_to_bool
 import re
 import zlib
 from pprint import pformat
+from datetime import datetime, timedelta
 
 try:
     import pymongo
@@ -83,12 +84,12 @@ class MongoDBCollector(diamond.collector.Collector):
 
         # lock %
         locks = server_status.get('locks')
+        interval = self.compute_interval(server_status, 'uptimeMillis')
         if locks:
             if '.' in locks:
                 locks['_global_'] = locks['.']
                 del (locks['.'])
             key_prefix = 'percent'
-            interval = self.compute_interval(server_status, 'uptimeMillis')
             for db_name in locks:
                 if not db_name_filter.search(db_name):
                     continue
@@ -125,34 +126,38 @@ class MongoDBCollector(diamond.collector.Collector):
             current_ops = filter(
                     lambda x: x['active'] and db_name in x['ns'],
                     db.current_op()['inprog'])
-            num = 0
-            num_over_one_sec = 0
+            self.publish('current_ops.count', len(current_ops))
+
+            slow_ops = list(db.system.profile.find({
+                "ts":{"$gt":(datetime.now()-timedelta(seconds=interval/1000))}
+            }))
+            self.publish('slow_query.count', len(slow_ops))
+
             slow_query_fields = {
-                'secs_running',
+                'millis',
                 'op',
                 'ns',
                 'query',
+                'command',
                 'client',
-                'connectionId',
                 'lockStats',
+                'numYield',
+                'ntoreturn',
             }
-            for op in current_ops:
-                num += 1
-                if op['secs_running'] >= 1:
-                    num_over_one_sec += 1
-                    fields = {k:op.get(k, '')
-                        for k in slow_query_fields}
+            for op in slow_ops:
+                fields = {k:op.get(k, '')
+                    for k in slow_query_fields}
 
-                    # we want to preserve the pretty dict output
-                    fields['query'] = pformat(fields['query'])
-                    fields['lockStats'] = pformat(fields['lockStats'])
+                # we want to preserve the pretty dict output
+                fields['query'] = pformat(fields['query'])
+                print fields['query']
+                fields['lockStats'] = pformat(fields['lockStats'])
 
-                    self.create_publish_event(
-                        'slow_query',
-                        fields=fields,
-                    )
-            self.publish('current_ops.count', num)
-            self.publish('slow_query.count', num_over_one_sec)
+                self.create_publish_event(
+                    'slow_query',
+                    timestamp = (op['ts'] - datetime.utcfromtimestamp(0)).total_seconds(),
+                    fields=fields,
+                )
 
 
     def get_dotted_value(self, data, key_name):
