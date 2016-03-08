@@ -22,7 +22,7 @@ try:
 except ImportError:
     psutil = None
 
-_KEY_MAPPING = {
+_KEY_MAPPING = [
     'MemAvailable',
     'MemTotal',
     'MemFree',
@@ -39,7 +39,7 @@ _KEY_MAPPING = {
     'VmallocUsed',
     'VmallocChunk',
     'Committed_AS',
-}
+]
 
 
 class MemoryCollector(diamond.collector.Collector):
@@ -50,7 +50,6 @@ class MemoryCollector(diamond.collector.Collector):
         config_help = super(MemoryCollector, self).get_default_config_help()
         config_help.update({
             'detailed': 'Set to True to Collect all the nodes',
-            'blacklist': 'comma separated list of metrics to ignore',
         })
         return config_help
 
@@ -63,7 +62,7 @@ class MemoryCollector(diamond.collector.Collector):
             'path':     'memory',
             # Collect all the nodes or just a few standard ones?
             # Uncomment to enable
-            'blacklist': ''
+            # 'detailed': 'True'
         })
         return config
 
@@ -71,7 +70,6 @@ class MemoryCollector(diamond.collector.Collector):
         """
         Collect memory stats
         """
-        blacklist = {x for x in self.config['blacklist'].split(',')}
         if os.access(self.PROC, os.R_OK):
             file = open(self.PROC)
             data = file.read()
@@ -83,7 +81,7 @@ class MemoryCollector(diamond.collector.Collector):
                     name = name.rstrip(':')
                     value = int(value)
 
-                    if (name not in _KEY_MAPPING - blacklist
+                    if (name not in _KEY_MAPPING
                             and 'detailed' not in self.config):
                         continue
 
