@@ -69,7 +69,7 @@ class MongoDBCollector(diamond.collector.Collector):
             return
 
         try:
-            client = pymongo.MongoClient()
+            client = pymongo.MongoClient(slaveOK=True)
         except Exception, e:
             self.log.error('Couldnt connect to mongodb: %s', e)
             return
