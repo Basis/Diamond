@@ -52,10 +52,11 @@ class RedisUploadQueueCollector(diamond.collector.Collector):
         port = self.config['port']
 
         try:
-            queue_length = redis.StrictRedis(host=host,port=port).llen('celery')
-            self.publish('length', int(queue_length))
+            redis_ = redis.StrictRedis(host=host,port=port)
+            self.publish('length', int(redis_.llen('celery')))
+            self.publish('data-export-length', int(redis_.llen('data-export')))
         except Exception as ex:
             self.log.error("RedisUploadQueueCollector: failed to connect to %s:%i. %s.",
                            host, port, ex)
-        
+
 
