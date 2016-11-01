@@ -1,4 +1,12 @@
 -e git+ssh://git@github.com/kalail/heka-py.git@master#egg=heka_py-0.30.3
+# RDS collector
+boto3==1.3.0
+
+# redis collector
+redis==2.9.1
+
+# mongo collector (I think)
+pymongo==2.5.2
 
 # setup.py is not understood by newer?older? versions of distutil
 ConfigObj
